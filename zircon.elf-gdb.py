@@ -832,8 +832,9 @@ class KASLRBreakpoint(gdb.Breakpoint):
         return self._is_valid
 
     def stop(self):
-        # A breakpoint cannot change anything so get callback on the following stop
-        gdb.events.stop.connect(self._stop_callback_internal)
+        if self.ignore_count == 0:
+            # A breakpoint cannot change anything so get callback on the following stop
+            gdb.events.stop.connect(self._stop_callback_internal)
         return True
 
     # Callback through events so the state can be changed
@@ -923,6 +924,7 @@ class KASLRStartBreakpoint(KASLRBreakpoint):
 
         self._is_valid = True
         gdb.Breakpoint.__init__(self, "*0x%x" % _start, internal=True)
+        self.ignore_count = 1
         self.silence = True
 
     # Callback from KASLRBreakpoint when it is safe to change state
